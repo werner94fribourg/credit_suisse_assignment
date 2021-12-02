@@ -5,13 +5,13 @@ import json_api.ServerEntry;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EntryGenerator
 {
@@ -20,28 +20,43 @@ public class EntryGenerator
     private BufferedWriter writer = null;
     private JSONArray eventsArray = new JSONArray();
 
+    private static final Logger LOGGER = Logger.getLogger("Generator Logger");
+
     //Generate multiple events
     public void generateEvents(int nbEvents)
     {
         try
         {
+            LOGGER.info("Open the logs file to generate random entries in the file");
             writer = new BufferedWriter(new FileWriter("files/logs.json"));
+            LOGGER.info("File successfully opened");
+            LOGGER.info("Generating "+ Integer.toString(nbEvents)+" random logs.");
             for(int i = 0; i < nbEvents; i++)
             {
                 generateEvent();
             }
+            LOGGER.info("Logs successfully generated");
             //Close the remaining events that are stored in the processing event set
+            LOGGER.info("Closing the remaining events");
             while(!processingEvents.isEmpty())
             {
                 pickProcessingEvent();
             }
+            LOGGER.info("Remaining events successfully closed");
+            LOGGER.info("Write the events into the file");
             String jsonEntryStringValue = eventsArray.toString(4);
             writer.write(jsonEntryStringValue);
+            LOGGER.info("Finishing to write the events");
             writer.close();
+            LOGGER.info("Closing the entries file");
         }
         catch (IOException exception)
         {
-            exception.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error while opening or closing the file");
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            exception.printStackTrace(pw);
+            LOGGER.log(Level.SEVERE, sw.toString());
         }
     }
 
